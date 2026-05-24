@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Dashboard')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{admin/fragments :: sidebar('dashboard')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{admin/fragments :: header('Dashboard')}"></header>
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="row g-4 mb-5">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card-custom h-100 border-0 stat-card">
+                            <h6 class="text-muted small fw-bold">TOTAL RESERVAS</h6>
+                            <div class="h2 fw-bold mb-1" th:text="${totalReservas}">1,284</div>
+                            <span class="text-success small fw-bold"><i class="bi bi-graph-up"></i> +12%</span>
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card-custom h-100 border-0 stat-card">
+                            <h6 class="text-muted small fw-bold">VENTAS DEL MES</h6>
+                            <div class="h2 fw-bold mb-1" th:text="${ventasMes}">S/ 45,200</div>
+                            <span class="text-success small fw-bold"><i class="bi bi-graph-up"></i> +8%</span>
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card-custom h-100 border-0 stat-card">
+                            <h6 class="text-muted small fw-bold">PLATOS ACTIVOS</h6>
+                            <div class="h2 fw-bold mb-1" th:text="${platosActivos}">24</div>
+                            <i class="bi bi-egg-fried"></i>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card-custom h-100 border-0 stat-card">
+                            <h6 class="text-muted small fw-bold">EQUIPO ACTIVO</h6>
+                            <div class="h2 fw-bold mb-1" th:text="${equipoActivo}">12</div>
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

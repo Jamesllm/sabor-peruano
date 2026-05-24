@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenida - Sabor Peruano</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; }
+        .card { border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 40px; max-width: 500px; text-align: center; }
+        h1 { color: #D91E1E; font-weight: 800; margin-bottom: 20px; }
+        .btn-red { background: #D91E1E; color: white; border-radius: 10px; padding: 12px 30px; font-weight: 600; text-decoration: none; display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>¡Bienvenido!</h1>
+        <p class="lead" th:text="${mensaje}">Mensaje de bienvenida...</p>
+        <a href="/" class="btn-red">Ver Carta</a>
+    </div>
+</body>
+</html>

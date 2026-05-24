@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{empleado/fragments :: head('Mapa de Mesas')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{empleado/fragments :: sidebar('mesas')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{empleado/fragments :: header('Disponibilidad de Salón')}"></header>
+            
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="row g-4 mb-5">
+                    <!-- Leyenda -->
+                    <div class="col-12">
+                        <div class="d-flex gap-4 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-success rounded-circle" style="width: 12px; height: 12px;"></div>
+                                <span class="small fw-bold">Disponible</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-danger rounded-circle" style="width: 12px; height: 12px;"></div>
+                                <span class="small fw-bold">Ocupada</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid de Mesas -->
+                    <div class="col-6 col-md-4 col-xl-2" th:each="i : ${#numbers.sequence(1, 12)}">
+                        <div class="card-custom text-center p-4 shadow-sm table-item" 
+                             th:classappend="${i % 3 == 0 ? 'occupied' : 'available'}">
+                            <i class="bi bi-door-closed fs-1 mb-2"></i>
+                            <h6 class="fw-bold mb-0" th:text="'Mesa ' + ${i < 10 ? '0' + i : i}">Mesa 01</h6>
+                            <small class="text-muted" th:text="${i % 3 == 0 ? 'Ocupada' : '4 personas'}">4 personas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- El fragmento de scripts y modales debe estar presente para la funcionalidad de "Nueva Reserva" en el header -->
+    <div class="modal fade" id="reserveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold">Nueva Reserva Manual</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form onsubmit="event.preventDefault(); showToast('Reserva creada'); bootstrap.Modal.getInstance(this.closest('.modal')).hide();">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">CLIENTE</label>
+                            <input type="text" class="form-control p-3 bg-light border-0" placeholder="Nombre completo" required>
+                        </div>
+                        <button type="submit" class="btn btn-red w-100 py-3 mt-3 shadow">CONFIRMAR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{empleado/fragments :: scripts}"></div>
+</body>
+</html>

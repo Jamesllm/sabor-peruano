@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Equipo')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{admin/fragments :: sidebar('equipo')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{admin/fragments :: header('Personal')}"></header>
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 fw-bold">Nuestro Equipo</h4>
+                    <button class="btn btn-red btn-sm px-4" onclick="showToast('Abrir modal nuevo empleado')">
+                        <i class="bi bi-person-plus me-2"></i>Añadir Miembro
+                    </button>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4" th:each="emp : ${equipo}">
+                        <div class="card-custom border-0 h-100">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle p-3 text-white fw-bold d-flex align-items-center justify-content-center bg-red"
+                                     style="width: 60px; height: 60px; font-size: 1.2rem;" th:text="${emp.iniciales}">EL</div>
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-0 fw-bold text-dark" th:text="${emp.nombre}">Elena Lopez</h5>
+                                    <p class="text-muted small mb-0" th:text="${emp.cargo}">Capitán de Meseros</p>
+                                </div>
+                            </div>
+                            <hr class="my-3 opacity-10">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-success-subtle text-success">Activo</span>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Menú')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{admin/fragments :: sidebar('menu')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{admin/fragments :: header('Menú')}"></header>
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 fw-bold">Carta del Restaurante</h4>
+                    <button class="btn btn-red btn-sm px-4" onclick="showToast('Abrir modal nuevo plato')">
+                        <i class="bi bi-plus-lg me-2"></i>Nuevo Plato
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Plato</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${menu}">
+                                    <td class="fw-bold text-dark" th:text="${item.nombre}">Lomo Saltado</td>
+                                    <td th:text="${item.categoria}">Fondos</td>
+                                    <td class="fw-bold text-red" th:text="'S/ ' + ${item.precio}">S/ 55.00</td>
+                                    <td><span class="badge bg-success-subtle text-success">Disponible</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"><i class="bi bi-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

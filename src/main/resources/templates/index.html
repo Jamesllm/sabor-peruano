@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabor Peruano | El Corazón de la Gastronomía</title>
+
+    <!-- Meta para SEO -->
+    <meta name="description"
+        content="Reserva en Sabor Peruano y disfruta de la mejor comida peruana en un ambiente elegante y patriótico.">
+
+    <!-- CDN de Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fuentes de Google: Outfit e Inter -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Estilos Externos -->
+    <link rel="stylesheet" th:href="@{/assets/css/styles.css}">
+</head>
+
+<body>
+
+    <!-- Selector de Roles (Simulado) -->
+    <div class="role-switcher shadow-sm">
+        <span class="text-muted small me-2"><i class="bi bi-person-badge"></i>Rol:</span>
+        <a th:href="@{/}" class="role-link active">Cliente</a>
+        <a th:href="@{/empleado}" class="role-link">Empleado</a>
+        <a th:href="@{/admin}" class="role-link">Admin</a>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-800" th:href="@{/}">
+                SABOR<span class="text-red"> PERUANO 🍖</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-1 text-dark"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/}">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#menu-especial">Nuestra Carta</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#reservar">Reservar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#historial">Mis Reservas</a></li>
+                    <li class="nav-item">
+                        <a href="#reservar" class="btn btn-red ms-lg-4 text-white shadow-sm">MESA VIP</a>
+                        <a th:href="@{/login}" class="btn btn-outline-dark px-4 py-2 border-2">INICIAR SESION</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Área de Contenido Principal -->
+    <main>
+
+        <!-- Sección Principal (Hero) -->
+        <div class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="display-1 mb-4">Pasión por el <span class="text-red">Sabor</span></h1>
+                    <p class="lead mb-5 text-muted">Descubre la esencia de la tradición peruana fusionada con la
+                        elegancia moderna. Cada plato es un tributo a nuestra historia.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="#menu-especial" class="btn btn-red text-white px-5 py-3">Explorar Menú</a>
+                        <a href="#reservar" class="btn btn-outline-dark px-5 py-3 border-2 fw-bold"
+                            style="border-radius: 8px;">RESERVAR</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú Categorizado -->
+        <div id="menu-especial" class="container section-padding">
+            <div class="text-center mb-5">
+                <h6 class="text-red fw-bold letter-spacing-lg mb-2">EXPERIENCIA GASTRONÓMICA</h6>
+                <h2 class="display-4" th:text="${titulo}">Nuestra Tradición</h2>
+            </div>
+
+            <!-- Filtro de Categorías -->
+            <div class="menu-nav mb-5">
+                <div class="menu-tab active" onclick="filterMenu('all', this)">Todos</div>
+                <div class="menu-tab" onclick="filterMenu('Entrada', this)">Entradas</div>
+                <div class="menu-tab" onclick="filterMenu('Fondo', this)">Platos de Fondo</div>
+                <div class="menu-tab" onclick="filterMenu('Postre', this)">Postres</div>
+                <div class="menu-tab" onclick="filterMenu('Bebida', this)">Bebidas</div>
+            </div>
+
+            <div class="row g-4" id="menu-container">
+                
+                <!-- Iteración Dinámica de Platillos con Thymeleaf -->
+                <div th:each="p : ${platillos}" 
+                     class="col-lg-4 col-md-6 menu-item" 
+                     th:classappend="${p.categoria}">
+                    <div class="dish-card">
+                        <div class="dish-img-container shadow">
+                            <!-- th:if para disponibilidad -->
+                            <span th:if="${!p.disponibilidad}" class="badge bg-danger position-absolute m-2 shadow-sm">Agotado</span>
+                            <img th:src="@{'/images/' + ${p.urlImagen}}" class="dish-img" th:alt="${p.nombre}">
+                        </div>
+                        <h4 class="mb-2" th:text="${p.nombre}">Nombre del Plato</h4>
+                        <p class="small text-muted mb-3" th:text="${p.descripcion}">Descripción del platillo.</p>
+                        <h5 class="text-red fw-bold" th:text="'S/ ' + ${p.precio}">S/ 0.00</h5>
+                    </div>
+                </div>
+
+                <!-- Mensaje si no hay platillos -->
+                <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(platillos)}">
+                    <i class="bi bi-search display-1 text-muted mb-4"></i>
+                    <h3 class="text-muted">No se encontraron platillos disponibles.</h3>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Formulario de Reservas -->
+        <div id="reservar" class="bg-light section-padding">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card-custom border-0 overflow-hidden p-0">
+                            <div class="row g-0">
+                                <div class="col-md-5 d-none d-md-block"
+                                    style="background: url('https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?auto=format&fit=crop&q=80&w=600') center/cover;">
+                                </div>
+                                <div class="col-md-7 p-5">
+                                    <h2 class="mb-4">Reserva tu Experiencia</h2>
+                                    <form id="reservationForm" onsubmit="handleReserve(event)">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-muted">NOMBRE</label>
+                                            <input type="text" class="form-control border-0 bg-white shadow-sm p-3"
+                                                placeholder="Tu nombre completo" required>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-6 mb-3">
+                                                <label class="form-label small fw-bold text-muted">FECHA</label>
+                                                <input type="date" class="form-control border-0 bg-white shadow-sm p-3"
+                                                    required>
+                                            </div>
+                                            <div class="col-6 mb-3">
+                                                <label class="form-label small fw-bold text-muted">HORA</label>
+                                                <input type="time" class="form-control border-0 bg-white shadow-sm p-3"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label small fw-bold text-muted">COMENSALES</label>
+                                            <select class="form-select border-0 bg-white shadow-sm p-3" required>
+                                                <option>1-2 Personas</option>
+                                                <option>3-4 Personas</option>
+                                                <option>5-6 Personas</option>
+                                                <option>7+ Personas</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-red w-100 py-3 shadow">SOLICITAR
+                                            RESERVA</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de Reservas -->
+        <div id="historial" class="container section-padding">
+            <div class="text-center mb-5">
+                <h2 class="display-4">Tus Reservas</h2>
+                <p class="text-muted">Revive tus mejores momentos en Sabor Peruano.</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Mesa</th>
+                            <th>Pax</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>12 Mar 2026</td>
+                            <td>Mesa 08</td>
+                            <td>2</td>
+                            <td><span class="badge bg-success px-3">Completada</span></td>
+                            <td><button class="btn btn-sm btn-outline-dark px-3">Ver Recibo</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-md-4">
+                    <div class="footer-logo mb-4">SABOR PERUANO</div>
+                    <p class="text-white-50 small">Orgullo gastronómico en cada bocado. Ven y vive la cultura del Perú
+                        en tu mesa.</p>
+                </div>
+                <div class="col-md-4 offset-md-4 text-md-end">
+                    <h5 class="text-white mb-4">Síguenos</h5>
+                    <div class="d-flex gap-3 justify-content-md-end fs-4">
+                        <a href="https://www.instagram.com/" class="text-red"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.facebook.com/" class="text-red"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-5 mb-4 border-secondary opacity-25">
+            <p class="text-center text-white-50 small">&copy; 2026 Sabor Peruano. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-5 rounded-4 shadow-lg">
+                <div class="modal-body">
+                    <i class="bi bi-check-circle-fill display-1 text-success mb-4"></i>
+                    <h3 class="fw-bold">¡Reserva Registrada!</h3>
+                    <p class="text-muted">Tu mesa ha sido reservada con éxito. Revisa tu correo para los detalles
+                        finales.</p>
+                    <button type="button" class="btn btn-red w-100 mt-3" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts y Librerías -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterMenu(category, element) {
+            const items = document.querySelectorAll('.menu-item');
+            const tabs = document.querySelectorAll('.menu-tab');
+
+            tabs.forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            items.forEach(item => {
+                if (category === 'all' || item.classList.contains(category)) {
+                    item.style.display = 'block';
+                    item.style.animation = 'fadeIn 0.5s ease-out forwards';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function handleReserve(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button');
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            btn.innerHTML = 'Procesando...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.innerHTML = 'SOLICITAR RESERVA';
+                btn.disabled = false;
+                modal.show();
+                event.target.reset();
+            }, 1200);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{empleado/fragments :: head('Operaciones')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{empleado/fragments :: sidebar('operaciones')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{empleado/fragments :: header('Flujo del Día')}"></header>
+            
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="row g-4">
+                    <!-- Stats -->
+                    <div class="col-lg-4">
+                        <div class="card-custom bg-red text-white border-0 mb-4 shadow">
+                            <h5 class="fw-bold mb-1 opacity-75">Ocupación Actual</h5>
+                            <div class="display-5 fw-bold" th:text="${ocupacionActual} + '%'">78%</div>
+                            <div class="progress mt-3" style="height: 6px; background: rgba(255,255,255,0.2);">
+                                <div class="progress-bar bg-white" th:style="'width: ' + ${ocupacionActual} + '%'"></div>
+                            </div>
+                        </div>
+                        <div class="card-custom border-0 shadow-sm">
+                            <h5 class="text-red mb-3 fw-bold">Atención Requerida</h5>
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0 d-flex align-items-center mb-2">
+                                    <div class="bg-warning-subtle text-warning p-2 rounded-3 me-3"><i class="bi bi-bell-fill"></i></div>
+                                    <div class="small fw-bold text-dark">Mesa 08 solicita servicio</div>
+                                </div>
+                                <div class="list-group-item border-0 px-0 d-flex align-items-center">
+                                    <div class="bg-info-subtle text-info p-2 rounded-3 me-3"><i class="bi bi-clock-fill"></i></div>
+                                    <div class="small fw-bold text-dark">Reserva VIP 21:00 lista</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Table -->
+                    <div class="col-lg-8">
+                        <div class="table-container border-0 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="mb-0 fw-bold">Próximas Llegadas</h4>
+                                <span class="badge bg-light text-muted p-2" id="currentDate">6 May, 2026</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Hora</th>
+                                            <th>Mesa</th>
+                                            <th>Pax</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="llegada : ${proximasLlegadas}">
+                                            <td class="fw-bold" th:text="${llegada.cliente}">Carlos Mendoza</td>
+                                            <td th:text="${llegada.fechaHora}">20:00</td>
+                                            <td><span class="badge bg-light text-dark px-3 py-2" th:text="${llegada.mesa}">Mesa 04</span></td>
+                                            <td th:text="${llegada.pax}">2</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-red text-white px-3" onclick="showToast('Check-in exitoso')">
+                                                    Check-in
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="reserveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold">Nueva Reserva Manual</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form onsubmit="event.preventDefault(); showToast('Reserva creada'); bootstrap.Modal.getInstance(this.closest('.modal')).hide();">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">CLIENTE</label>
+                            <input type="text" class="form-control p-3 bg-light border-0" placeholder="Nombre completo" required>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-bold text-muted">FECHA</label>
+                                <input type="date" class="form-control p-3 bg-light border-0" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label small fw-bold text-muted">MESA</label>
+                                <select class="form-select p-3 bg-light border-0">
+                                    <option>Mesa 01</option><option>Mesa 02</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-red w-100 py-3 mt-3 shadow">CONFIRMAR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{empleado/fragments :: scripts}"></div>
+    <script>
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    </script>
+</body>
+</html>

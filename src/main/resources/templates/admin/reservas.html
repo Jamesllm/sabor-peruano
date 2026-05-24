@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Reservas')}"></head>
+<body class="bg-light">
+    <div class="dashboard-wrapper">
+        <aside th:replace="~{admin/fragments :: sidebar('reservas')}"></aside>
+        <main class="main-content">
+            <header th:replace="~{admin/fragments :: header('Reservas')}"></header>
+            <div class="container-fluid p-4 p-lg-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 fw-bold">Lista de Reservas</h4>
+                    <button class="btn btn-red btn-sm px-4" onclick="showToast('Abrir modal de nueva reserva')">
+                        <i class="bi bi-plus-lg me-2"></i>Nueva Reserva
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha / Hora</th>
+                                    <th>Pax</th>
+                                    <th>Consumo</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="reserva : ${reservas}">
+                                    <td class="text-muted" th:text="${reserva.id}">#S001</td>
+                                    <td class="fw-bold" th:text="${reserva.cliente}">Juan Pérez</td>
+                                    <td th:text="${reserva.fechaHora}">05 Abr, 20:30</td>
+                                    <td><span class="badge bg-light text-dark rounded-pill px-3" th:text="${reserva.pax} + ' pax'">2 pax</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-dark border-0 bg-light"
+                                            th:data-platillos="${#strings.listJoin(reserva.platillos, ',')}"
+                                            onclick="showDishesModal(this.getAttribute('data-platillos').split(','))">
+                                            <i class="bi bi-search me-1"></i> Ver platos
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status" 
+                                              th:classappend="${reserva.estado == 'Confirmada' ? 'bg-success-subtle' : 'bg-warning-subtle'}"
+                                              th:text="${reserva.estado}">Confirmada</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"><i class="bi bi-pencil"></i></button>
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1" onclick="showToast('Reserva eliminada')"><i class="bi bi-trash text-danger"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Detalle de Platos -->
+    <div class="modal fade" id="dishesListModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold">Detalle de Consumo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <ul class="list-group list-group-flush" id="dishesListContent"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{admin/fragments :: scripts}"></div>
+    <script>
+        function showDishesModal(dishes) {
+            const list = document.getElementById('dishesListContent');
+            if (Array.isArray(dishes)) {
+                list.innerHTML = dishes.map(d => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                        <span><i class="bi bi-check2-circle text-red me-2"></i> ${d}</span>
+                        <span class="badge bg-light text-dark rounded-pill">1</span>
+                    </li>
+                `).join('');
+            }
+            new bootstrap.Modal(document.getElementById('dishesListModal')).show();
+        }
+    </script>
+</body>
+</html>
