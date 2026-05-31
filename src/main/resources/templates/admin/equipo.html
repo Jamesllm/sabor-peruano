@@ -9,27 +9,81 @@
             <div class="container-fluid p-4 p-lg-5">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0 fw-bold">Nuestro Equipo</h4>
-                    <button class="btn btn-red btn-sm px-4" onclick="showToast('Abrir modal nuevo empleado')">
+                    <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#empleadoModal" onclick="openCreateModal()">
                         <i class="bi bi-person-plus me-2"></i>Añadir Miembro
                     </button>
                 </div>
-                <div class="row g-4">
-                    <div class="col-md-6 col-lg-4" th:each="emp : ${equipo}">
+
+                <!-- Buscador y Filtros -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <!-- Buscador -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="input-group bg-white shadow-sm rounded-3">
+                            <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2" placeholder="Buscar miembro..." onkeyup="filterCards()">
+                        </div>
+                    </div>
+                    <!-- Filtros de Estado -->
+                    <div class="col-md-6 col-lg-8 text-md-end">
+                        <div class="btn-group shadow-sm rounded-3" role="group">
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterAll" checked onclick="setStatusFilter('all')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterAll">Todos</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterActive" onclick="setStatusFilter('active')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterActive">Activos</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterInactive" onclick="setStatusFilter('inactive')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterInactive">Inactivos</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4" id="team-container">
+                    <div class="col-md-6 col-lg-4 team-card-col" th:each="emp : ${equipo}" th:data-activo="${emp.activo != false}">
                         <div class="card-custom border-0 h-100">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-circle p-3 text-white fw-bold d-flex align-items-center justify-content-center bg-red"
                                      style="width: 60px; height: 60px; font-size: 1.2rem;" th:text="${emp.iniciales}">EL</div>
                                 <div class="flex-grow-1">
-                                    <h5 class="mb-0 fw-bold text-dark" th:text="${emp.nombre}">Elena Lopez</h5>
+                                    <h5 class="mb-0 fw-bold text-dark member-name" th:text="${emp.nombre}">Elena Lopez</h5>
                                     <p class="text-muted small mb-0" th:text="${emp.cargo}">Capitán de Meseros</p>
                                 </div>
                             </div>
                             <hr class="my-3 opacity-10">
-                            <div class="d-flex justify-content-between">
-                                <span class="badge bg-success-subtle text-success">Activo</span>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span th:if="${emp.activo != false}" class="badge bg-success-subtle text-success">Activo</span>
+                                    <span th:if="${emp.activo == false}" class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                </div>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button>
-                                    <button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-trash"></i></button>
+                                    <button class="btn btn-sm btn-light rounded-circle p-2"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#empleadoModal"
+                                            th:data-id="${emp.id}"
+                                            th:data-nombre="${emp.nombre}"
+                                            th:data-cargo="${emp.cargo}"
+                                            th:data-activo="${emp.activo != false}"
+                                            onclick="openEditModal(this)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    
+                                    <!-- Logical delete button (only when active) -->
+                                    <button th:if="${emp.activo != false}"
+                                            class="btn btn-sm btn-light rounded-circle p-2 text-danger"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteConfirmModal"
+                                            th:data-delete-url="@{'/admin/equipo/eliminar/' + ${emp.id}}"
+                                            onclick="prepareDelete(this)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <!-- Activation button (only when inactive) -->
+                                    <a th:if="${emp.activo == false}"
+                                       th:href="@{'/admin/equipo/activar/' + ${emp.id}}"
+                                       class="btn btn-sm btn-light rounded-circle p-2 text-success"
+                                       title="Activar Miembro">
+                                        <i class="bi bi-check-circle"></i>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -38,6 +92,115 @@
             </div>
         </main>
     </div>
+
+    <!-- Modal Empleado -->
+    <div class="modal fade" id="empleadoModal" tabindex="-1" aria-labelledby="empleadoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 bg-light p-4 rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Nuevo Miembro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/admin/equipo/guardar}" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="empleadoId" name="id">
+                        <input type="hidden" id="empleadoActivo" name="activo">
+                        
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label fw-bold small text-muted">NOMBRE COMPLETO</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="nombre" name="nombre" required placeholder="Ej. Elena Lopez">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="cargo" class="form-label fw-bold small text-muted">CARGO / PUESTO</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="cargo" name="cargo" required placeholder="Ej. Capitán de Meseros">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-dark px-4 py-2 border-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-red px-5 py-2 text-white shadow-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
+                <div class="modal-body">
+                    <i class="bi bi-exclamation-triangle-fill display-3 text-warning mb-4"></i>
+                    <h4 class="fw-bold mb-3">¿Desactivar miembro?</h4>
+                    <p class="text-muted small">Esta acción marcará al miembro del equipo como inactivo. No se listará como personal activo.</p>
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button type="button" class="btn btn-outline-dark px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <a id="confirmDeleteBtn" href="#" class="btn btn-red px-4 text-white shadow-sm">Confirmar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{admin/fragments :: scripts}"></div>
+
+    <script>
+        function openEditModal(button) {
+            document.getElementById('modalTitle').textContent = 'Editar Miembro';
+            document.getElementById('empleadoId').value = button.getAttribute('data-id');
+            document.getElementById('empleadoActivo').value = button.getAttribute('data-activo');
+            document.getElementById('nombre').value = button.getAttribute('data-nombre');
+            document.getElementById('cargo').value = button.getAttribute('data-cargo');
+        }
+
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Nuevo Miembro';
+            document.getElementById('empleadoId').value = '';
+            document.getElementById('empleadoActivo').value = 'true';
+            document.getElementById('nombre').value = '';
+            document.getElementById('cargo').value = '';
+        }
+
+        function prepareDelete(button) {
+            const deleteUrl = button.getAttribute('data-delete-url');
+            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+        }
+
+        let currentStatusFilter = 'all';
+
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            filterCards();
+        }
+
+        function filterCards() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const cols = document.querySelectorAll('#team-container .team-card-col');
+
+            cols.forEach(col => {
+                const name = col.querySelector('.member-name').textContent.toLowerCase();
+                const isActive = col.getAttribute('data-activo') === 'true';
+
+                // Check search query
+                const matchesSearch = name.includes(searchQuery);
+
+                // Check status filter
+                let matchesStatus = false;
+                if (currentStatusFilter === 'all') {
+                    matchesStatus = true;
+                } else if (currentStatusFilter === 'active') {
+                    matchesStatus = isActive;
+                } else if (currentStatusFilter === 'inactive') {
+                    matchesStatus = !isActive;
+                }
+
+                if (matchesSearch && matchesStatus) {
+                    col.style.display = '';
+                } else {
+                    col.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

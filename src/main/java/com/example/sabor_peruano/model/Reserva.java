@@ -1,19 +1,36 @@
 package com.example.sabor_peruano.model;
 
+import jakarta.persistence.*;
 import java.util.List;
 
+@Entity
+@Table(name = "reserva")
 public class Reserva {
-    private String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String cliente;
+
     private String fechaHora;
+
     private Integer pax;
+
     private String mesa;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "reserva_platillo", joinColumns = @JoinColumn(name = "reserva_id"))
+    @Column(name = "platillo")
     private List<String> platillos;
+
     private String estado;
+
+    private Boolean activo = true;
 
     public Reserva() {}
 
-    public Reserva(String id, String cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
+    public Reserva(Long id, String cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
         this.id = id;
         this.cliente = cliente;
         this.fechaHora = fechaHora;
@@ -23,11 +40,20 @@ public class Reserva {
         this.estado = estado;
     }
 
-    public String getId() {
+    public Reserva(String cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
+        this.cliente = cliente;
+        this.fechaHora = fechaHora;
+        this.pax = pax;
+        this.mesa = mesa;
+        this.platillos = platillos;
+        this.estado = estado;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -77,5 +103,13 @@ public class Reserva {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

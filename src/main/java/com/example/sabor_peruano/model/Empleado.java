@@ -1,37 +1,39 @@
 package com.example.sabor_peruano.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "empleado")
 public class Empleado {
-    private String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String nombre;
+
     private String cargo;
-    private String iniciales;
+
+    private Boolean activo = true;
 
     public Empleado() {}
 
-    public Empleado(String id, String nombre, String cargo) {
+    public Empleado(Long id, String nombre, String cargo) {
         this.id = id;
         this.nombre = nombre;
         this.cargo = cargo;
-        this.iniciales = obtenerIniciales(nombre);
     }
 
-    private String obtenerIniciales(String nombre) {
-        if (nombre == null || nombre.isEmpty()) return "";
-        String[] parts = nombre.split(" ");
-        StringBuilder res = new StringBuilder();
-        for (int i = 0; i < Math.min(parts.length, 2); i++) {
-            if (!parts[i].isEmpty()) {
-                res.append(parts[i].charAt(0));
-            }
-        }
-        return res.toString().toUpperCase();
+    public Empleado(String nombre, String cargo) {
+        this.nombre = nombre;
+        this.cargo = cargo;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -41,7 +43,6 @@ public class Empleado {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-        this.iniciales = obtenerIniciales(nombre);
     }
 
     public String getCargo() {
@@ -52,7 +53,24 @@ public class Empleado {
         this.cargo = cargo;
     }
 
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    @Transient
     public String getIniciales() {
-        return iniciales;
+        if (nombre == null || nombre.isEmpty()) return "";
+        String[] parts = nombre.trim().split("\\s+");
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < Math.min(parts.length, 2); i++) {
+            if (!parts[i].isEmpty()) {
+                res.append(parts[i].charAt(0));
+            }
+        }
+        return res.toString().toUpperCase();
     }
 }
