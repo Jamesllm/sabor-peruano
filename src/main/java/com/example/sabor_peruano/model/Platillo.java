@@ -1,20 +1,44 @@
 package com.example.sabor_peruano.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "platillo")
 public class Platillo {
-    private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String nombre;
+
     private String descripcion;
+
     private BigDecimal precio;
+
     private String categoria;
-    private String urlImagen;
+
     private Boolean disponibilidad;
+
+    @Column(name = "url_imagen")
+    private String urlImagen;
+
+    private Boolean activo = true;
 
     public Platillo() {
     }
 
-    public Platillo(Integer id, String nombre, String descripcion, BigDecimal precio, String categoria, String urlImagen, Boolean disponibilidad) {
+    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, String categoria, Boolean disponibilidad) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.precio = precio;
+        this.categoria = categoria;
+        this.disponibilidad = disponibilidad;
+    }
+
+    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, String categoria, String urlImagen, Boolean disponibilidad) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -25,11 +49,11 @@ public class Platillo {
     }
 
     // Getters y Setters
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -65,6 +89,14 @@ public class Platillo {
         this.categoria = categoria;
     }
 
+    public Boolean getDisponibilidad() {
+        return disponibilidad;
+    }
+
+    public void setDisponibilidad(Boolean disponibilidad) {
+        this.disponibilidad = disponibilidad;
+    }
+
     public String getUrlImagen() {
         return urlImagen;
     }
@@ -73,11 +105,11 @@ public class Platillo {
         this.urlImagen = urlImagen;
     }
 
-    public Boolean getDisponibilidad() {
-        return disponibilidad;
+    public Boolean getActivo() {
+        return activo;
     }
 
-    public void setDisponibilidad(Boolean disponibilidad) {
-        this.disponibilidad = disponibilidad;
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 }

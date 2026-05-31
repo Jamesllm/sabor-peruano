@@ -3,9 +3,13 @@ package com.example.sabor_peruano.controller;
 import com.example.sabor_peruano.model.Empleado;
 import com.example.sabor_peruano.model.Platillo;
 import com.example.sabor_peruano.model.Reserva;
+import com.example.sabor_peruano.repository.PlatilloRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.math.BigDecimal;
@@ -15,6 +19,12 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private final PlatilloRepository platilloRepository;
+
+    public AdminController(PlatilloRepository platilloRepository) {
+        this.platilloRepository = platilloRepository;
+    }
 
     @GetMapping("")
     public String dashboard(Model model) {
@@ -36,15 +46,42 @@ public class AdminController {
 
     @GetMapping("/menu")
     public String menu(Model model) {
-        model.addAttribute("menu", getMenuSimulado());
+        model.addAttribute("menu", platilloRepository.findAllByOrderByIdDesc());
         return "admin/menu";
+    }
+
+    @PostMapping("/menu/guardar")
+    public String guardarPlatillo(@ModelAttribute Platillo platillo) {
+        if (platillo.getActivo() == null) {
+            platillo.setActivo(true);
+        }
+        platilloRepository.save(platillo);
+        return "redirect:/admin/menu";
+    }
+
+    @GetMapping("/menu/eliminar/{id}")
+    public String eliminarPlatillo(@PathVariable Long id) {
+        platilloRepository.findById(id).ifPresent(platillo -> {
+            platillo.setActivo(false); // Eliminación lógica
+            platilloRepository.save(platillo);
+        });
+        return "redirect:/admin/menu";
+    }
+
+    @GetMapping("/menu/activar/{id}")
+    public String activarPlatillo(@PathVariable Long id) {
+        platilloRepository.findById(id).ifPresent(platillo -> {
+            platillo.setActivo(true);
+            platilloRepository.save(platillo);
+        });
+        return "redirect:/admin/menu";
     }
 
     // Métodos auxiliares para datos simulados
     private void addStatsToModel(Model model) {
         model.addAttribute("totalReservas", "1,284");
         model.addAttribute("ventasMes", "S/ 45,200");
-        model.addAttribute("platosActivos", "24");
+        model.addAttribute("platosActivos", String.valueOf(platilloRepository.countAllActive()));
         model.addAttribute("equipoActivo", "12");
     }
 
@@ -72,12 +109,12 @@ public class AdminController {
 
     private List<Platillo> getMenuSimulado() {
         return Arrays.asList(
-            new Platillo(1, "Lomo Saltado", "Platos de Fondo", new BigDecimal("55.00"), "Fondos", null, true),
-            new Platillo(2, "Ceviche Clásico", "Entradas", new BigDecimal("48.00"), "Entradas", null, true),
-            new Platillo(3, "Pisco Sour", "Bebidas", new BigDecimal("28.00"), "Bebidas", null, true),
-            new Platillo(4, "Ají de Gallina", "Platos de Fondo", new BigDecimal("42.00"), "Fondos", null, true),
-            new Platillo(5, "Tacu Tacu con Lomo", "Platos de Fondo", new BigDecimal("58.00"), "Fondos", null, true),
-            new Platillo(6, "Causa Limeña", "Entradas", new BigDecimal("35.00"), "Entradas", null, true)
+            // new Platillo(1, "Lomo Saltado", "Platos de Fondo", new BigDecimal("55.00"), "Fondos", null, true),
+            // new Platillo(2, "Ceviche Clásico", "Entradas", new BigDecimal("48.00"), "Entradas", null, true),
+            // new Platillo(3, "Pisco Sour", "Bebidas", new BigDecimal("28.00"), "Bebidas", null, true),
+            // new Platillo(4, "Ají de Gallina", "Platos de Fondo", new BigDecimal("42.00"), "Fondos", null, true),
+            // new Platillo(5, "Tacu Tacu con Lomo", "Platos de Fondo", new BigDecimal("58.00"), "Fondos", null, true),
+            // new Platillo(6, "Causa Limeña", "Entradas", new BigDecimal("35.00"), "Entradas", null, true)
         );
     }
 }

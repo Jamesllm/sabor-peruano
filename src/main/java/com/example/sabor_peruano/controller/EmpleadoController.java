@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import com.example.sabor_peruano.repository.PlatilloRepository;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +13,12 @@ import java.util.List;
 @Controller
 @RequestMapping("/empleado")
 public class EmpleadoController {
+
+    private final PlatilloRepository platilloRepository;
+
+    public EmpleadoController(PlatilloRepository platilloRepository) {
+        this.platilloRepository = platilloRepository;
+    }
 
     @GetMapping("")
     public String operaciones(Model model) {
@@ -23,6 +30,12 @@ public class EmpleadoController {
     @GetMapping("/mesas")
     public String mesas(Model model) {
         return "empleado/mesas";
+    }
+
+    @GetMapping("/menu")
+    public String menu(Model model) {
+        model.addAttribute("menu", platilloRepository.findAllActive());
+        return "empleado/menu";
     }
 
     private List<Reserva> getProximasLlegadas() {

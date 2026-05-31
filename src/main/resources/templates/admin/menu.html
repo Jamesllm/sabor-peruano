@@ -9,9 +9,33 @@
             <div class="container-fluid p-4 p-lg-5">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0 fw-bold">Carta del Restaurante</h4>
-                    <button class="btn btn-red btn-sm px-4" onclick="showToast('Abrir modal nuevo plato')">
+                    <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#platilloModal" onclick="openCreateModal()">
                         <i class="bi bi-plus-lg me-2"></i>Nuevo Plato
                     </button>
+                </div>
+
+                <!-- Buscador y Filtros -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <!-- Buscador -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="input-group bg-white shadow-sm rounded-3">
+                            <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2" placeholder="Buscar platillo..." onkeyup="filterTable()">
+                        </div>
+                    </div>
+                    <!-- Filtros de Estado -->
+                    <div class="col-md-6 col-lg-8 text-md-end">
+                        <div class="btn-group shadow-sm rounded-3" role="group">
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterAll" checked onclick="setStatusFilter('all')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterAll">Todos</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterActive" onclick="setStatusFilter('active')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterActive">Activos</label>
+
+                            <input type="radio" class="btn-check" name="statusFilter" id="filterInactive" onclick="setStatusFilter('inactive')">
+                            <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterInactive">Inactivos</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="table-container">
                     <div class="table-responsive">
@@ -25,15 +49,49 @@
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr th:each="item : ${menu}">
-                                    <td class="fw-bold text-dark" th:text="${item.nombre}">Lomo Saltado</td>
+                            <tbody id="menu-table-body">
+                                <tr th:each="item : ${menu}" th:data-activo="${item.activo != false}">
+                                    <td class="fw-bold text-dark dish-name" th:text="${item.nombre}">Lomo Saltado</td>
                                     <td th:text="${item.categoria}">Fondos</td>
                                     <td class="fw-bold text-red" th:text="'S/ ' + ${item.precio}">S/ 55.00</td>
-                                    <td><span class="badge bg-success-subtle text-success">Disponible</span></td>
+                                    <td>
+                                        <span th:if="${item.activo == false}" class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                        <span th:if="${item.activo != false && item.disponibilidad == true}" class="badge bg-success-subtle text-success">Disponible</span>
+                                        <span th:if="${item.activo != false && item.disponibilidad != true}" class="badge bg-danger-subtle text-danger">Agotado</span>
+                                    </td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#platilloModal"
+                                                th:data-id="${item.id}"
+                                                th:data-nombre="${item.nombre}"
+                                                th:data-descripcion="${item.descripcion}"
+                                                th:data-precio="${item.precio}"
+                                                th:data-categoria="${item.categoria}"
+                                                th:data-urlimagen="${item.urlImagen}"
+                                                th:data-disponibilidad="${item.disponibilidad ?: false}"
+                                                th:data-activo="${item.activo != false}"
+                                                onclick="openEditModal(this)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        
+                                        <!-- Botón de Eliminar (Solo si está activo) -->
+                                        <button th:if="${item.activo != false}"
+                                                class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-danger"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteConfirmModal"
+                                                th:data-delete-url="@{'/admin/menu/eliminar/' + ${item.id}}"
+                                                onclick="prepareDelete(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+
+                                        <!-- Botón de Activar (Solo si está inactivo) -->
+                                        <a th:if="${item.activo == false}"
+                                           th:href="@{'/admin/menu/activar/' + ${item.id}}"
+                                           class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-success"
+                                           title="Activar Platillo">
+                                            <i class="bi bi-check-circle"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -43,6 +101,148 @@
             </div>
         </main>
     </div>
+    <!-- Modal de Platillo -->
+    <div class="modal fade" id="platilloModal" tabindex="-1" aria-labelledby="platilloModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 bg-light p-4 rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Nuevo Plato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/admin/menu/guardar}" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="platilloId" name="id">
+                        <input type="hidden" id="platilloActivo" name="activo">
+                        
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label fw-bold small text-muted">NOMBRE DEL PLATO</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="nombre" name="nombre" required placeholder="Ej. Lomo Saltado">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label fw-bold small text-muted">DESCRIPCIÓN</label>
+                            <textarea class="form-control bg-light border-0 p-3" id="descripcion" name="descripcion" rows="3" placeholder="Descripción de los ingredientes..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="precio" class="form-label fw-bold small text-muted">PRECIO (S/)</label>
+                                <input type="number" class="form-control bg-light border-0 p-3" id="precio" name="precio" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="categoria" class="form-label fw-bold small text-muted">CATEGORÍA</label>
+                                <select class="form-select bg-light border-0 p-3" id="categoria" name="categoria" required>
+                                    <option value="Entrada">Entrada</option>
+                                    <option value="Fondo">Fondo</option>
+                                    <option value="Postre">Postre</option>
+                                    <option value="Bebida">Bebida</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="urlImagen" class="form-label fw-bold small text-muted">IMAGEN (NOMBRE DE ARCHIVO)</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="urlImagen" name="urlImagen" placeholder="Ej. lomo-saltado.jpg">
+                        </div>
+
+                        <div class="mb-3 form-check form-switch p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                            <label class="form-check-label fw-bold small text-muted ms-2" for="disponibilidad">¿DISPONIBLE EN EL MENÚ?</label>
+                            <input class="form-check-input ms-auto" type="checkbox" role="switch" id="disponibilidad" name="disponibilidad" value="true">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 bg-light rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-dark px-4 py-2 border-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-red px-5 py-2 text-white shadow-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
+                <div class="modal-body">
+                    <i class="bi bi-exclamation-triangle-fill display-3 text-warning mb-4"></i>
+                    <h4 class="fw-bold mb-3">¿Eliminar plato?</h4>
+                    <p class="text-muted small">Esta acción marcará el platillo como inactivo en el menú. No se mostrará a los clientes.</p>
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button type="button" class="btn btn-outline-dark px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <a id="confirmDeleteBtn" href="#" class="btn btn-red px-4 text-white shadow-sm">Confirmar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{admin/fragments :: scripts}"></div>
+
+    <script>
+        function openEditModal(button) {
+            document.getElementById('modalTitle').textContent = 'Editar Plato';
+            document.getElementById('platilloId').value = button.getAttribute('data-id');
+            document.getElementById('platilloActivo').value = button.getAttribute('data-activo');
+            document.getElementById('nombre').value = button.getAttribute('data-nombre');
+            document.getElementById('descripcion').value = button.getAttribute('data-descripcion');
+            document.getElementById('precio').value = button.getAttribute('data-precio');
+            document.getElementById('categoria').value = button.getAttribute('data-categoria');
+            document.getElementById('urlImagen').value = button.getAttribute('data-urlimagen');
+            document.getElementById('disponibilidad').checked = button.getAttribute('data-disponibilidad') === 'true';
+        }
+
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Nuevo Plato';
+            document.getElementById('platilloId').value = '';
+            document.getElementById('platilloActivo').value = 'true';
+            document.getElementById('nombre').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('precio').value = '';
+            document.getElementById('categoria').value = 'Entrada';
+            document.getElementById('urlImagen').value = '';
+            document.getElementById('disponibilidad').checked = true;
+        }
+
+        function prepareDelete(button) {
+            const deleteUrl = button.getAttribute('data-delete-url');
+            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+        }
+
+        let currentStatusFilter = 'all';
+
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            filterTable();
+        }
+
+        function filterTable() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#menu-table-body tr');
+
+            rows.forEach(row => {
+                const name = row.querySelector('.dish-name').textContent.toLowerCase();
+                const isActive = row.getAttribute('data-activo') === 'true';
+
+                // Check search query
+                const matchesSearch = name.includes(searchQuery);
+
+                // Check status filter
+                let matchesStatus = false;
+                if (currentStatusFilter === 'all') {
+                    matchesStatus = true;
+                } else if (currentStatusFilter === 'active') {
+                    matchesStatus = isActive;
+                } else if (currentStatusFilter === 'inactive') {
+                    matchesStatus = !isActive;
+                }
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

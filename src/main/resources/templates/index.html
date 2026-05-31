@@ -100,7 +100,7 @@
                     <div class="dish-card">
                         <div class="dish-img-container shadow">
                             <!-- th:if para disponibilidad -->
-                            <span th:if="${!p.disponibilidad}" class="badge bg-danger position-absolute m-2 shadow-sm">Agotado</span>
+                             <span th:if="${p.disponibilidad != true}" class="badge bg-danger position-absolute m-2 shadow-sm">Agotado</span>
                             <img th:src="@{'/images/' + ${p.urlImagen}}" class="dish-img" th:alt="${p.nombre}">
                         </div>
                         <h4 class="mb-2" th:text="${p.nombre}">Nombre del Plato</h4>
