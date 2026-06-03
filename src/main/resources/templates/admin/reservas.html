@@ -7,24 +7,19 @@
         <main class="main-content">
             <header th:replace="~{admin/fragments :: header('Reservas')}"></header>
             <div class="container-fluid p-4 p-lg-5">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="mb-0 fw-bold">Lista de Reservas</h4>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#reservaModal" onclick="openCreateModal()">
                         <i class="bi bi-plus-lg me-2"></i>Nueva Reserva
                     </button>
-                </div>
 
-                <!-- Buscador y Filtros -->
-                <div class="row g-3 mb-4 align-items-center">
-                    <!-- Buscador -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="input-group bg-white shadow-sm rounded-3">
+                    <!-- Buscador y Filtros -->
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <!-- Buscador -->
+                        <div class="input-group bg-white shadow-sm rounded-3" style="width: 300px;">
                             <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
                             <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2" placeholder="Buscar cliente..." onkeyup="filterTable()">
                         </div>
-                    </div>
-                    <!-- Filtros de Estado -->
-                    <div class="col-md-6 col-lg-8 text-md-end">
+                        <!-- Filtros de Estado -->
                         <div class="btn-group shadow-sm rounded-3" role="group">
                             <input type="radio" class="btn-check" name="statusFilter" id="filterAll" checked onclick="setStatusFilter('all')">
                             <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterAll">Todos</label>
@@ -56,7 +51,7 @@
                             <tbody id="reservas-table-body">
                                 <tr th:each="reserva : ${reservas}" th:data-activo="${reserva.activo != false}">
                                     <td class="text-muted" th:text="'#' + ${reserva.id}">#1</td>
-                                    <td class="fw-bold client-name" th:text="${reserva.cliente}">Juan Pérez</td>
+                                    <td class="fw-bold client-name" th:text="${reserva.cliente != null ? reserva.cliente.nombre : ''}">Juan Pérez</td>
                                     <td th:text="${reserva.fechaHora}">05 Abr, 20:30</td>
                                     <td><span class="badge bg-light text-dark rounded-pill px-3" th:text="${reserva.pax} + ' pax'">2 pax</span></td>
                                     <td th:text="${reserva.mesa}">Mesa 04</td>
@@ -77,7 +72,7 @@
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#reservaModal"
                                                 th:data-id="${reserva.id}"
-                                                th:data-cliente="${reserva.cliente}"
+                                                th:data-cliente="${reserva.cliente != null ? reserva.cliente.id : ''}"
                                                 th:data-fechahora="${reserva.fechaHora}"
                                                 th:data-pax="${reserva.pax}"
                                                 th:data-mesa="${reserva.mesa}"
@@ -127,10 +122,12 @@
                     <div class="modal-body p-4">
                         <input type="hidden" id="reservaId" name="id">
                         <input type="hidden" id="reservaActivo" name="activo">
-                        
-                        <div class="mb-3">
+                                                <div class="mb-3">
                             <label for="cliente" class="form-label fw-bold small text-muted">CLIENTE</label>
-                            <input type="text" class="form-control bg-light border-0 p-3" id="cliente" name="cliente" required placeholder="Ej. Juan Pérez">
+                            <select class="form-select bg-light border-0 p-3" id="cliente" name="cliente.id" required>
+                                <option value="">Seleccione un cliente...</option>
+                                <option th:each="c : ${clientesDisponibles}" th:value="${c.id}" th:text="${c.nombre} + ' (' + ${c.documento} + ')'"></option>
+                            </select>
                         </div>
 
                         <div class="row">
@@ -144,7 +141,12 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="mesa" class="form-label fw-bold small text-muted">MESA / ÁREA</label>
-                                <input type="text" class="form-control bg-light border-0 p-3" id="mesa" name="mesa" required placeholder="Ej. Mesa 04">
+                                <select class="form-select bg-light border-0 p-3" id="mesa" name="mesa" required>
+                                    <option value="">Seleccione...</option>
+                                    <option th:each="m : ${mesasDisponibles}" 
+                                             th:value="${m.numero}" 
+                                             th:text="${m.numero} + ' (' + ${m.ubicacion} + ' - ' + ${m.capacidad} + ' pax)'">Mesa 01</option>
+                                </select>
                             </div>
                         </div>
 
@@ -160,8 +162,7 @@
                         <div class="mb-3">
                             <label for="estado" class="form-label fw-bold small text-muted">ESTADO</label>
                             <select class="form-select bg-light border-0 p-3" id="estado" name="estado" required>
-                                <option value="Confirmada">Confirmada</option>
-                                <option value="Pendiente">Pendiente</option>
+                                <option th:each="est : ${estadosDisponibles}" th:value="${est.nombre}" th:text="${est.nombre}"></option>
                             </select>
                         </div>
                     </div>
@@ -249,7 +250,7 @@
             document.getElementById('fechaHora').value = '';
             document.getElementById('pax').value = '2';
             document.getElementById('mesa').value = '';
-            document.getElementById('estado').value = 'Pendiente';
+            document.getElementById('estado').selectedIndex = 0;
             
             const select = document.getElementById('platillos');
             for (let i = 0; i < select.options.length; i++) {

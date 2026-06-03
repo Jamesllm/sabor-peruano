@@ -52,7 +52,7 @@
                             <tbody id="menu-table-body">
                                 <tr th:each="item : ${menu}" th:data-activo="${item.activo != false}">
                                     <td class="fw-bold text-dark dish-name" th:text="${item.nombre}">Lomo Saltado</td>
-                                    <td th:text="${item.categoria}">Fondos</td>
+                                    <td th:text="${item.categoria != null ? item.categoria.nombre : ''}">Fondos</td>
                                     <td class="fw-bold text-red" th:text="'S/ ' + ${item.precio}">S/ 55.00</td>
                                     <td>
                                         <span th:if="${item.activo == false}" class="badge bg-secondary-subtle text-secondary">Inactivo</span>
@@ -67,7 +67,7 @@
                                                 th:data-nombre="${item.nombre}"
                                                 th:data-descripcion="${item.descripcion}"
                                                 th:data-precio="${item.precio}"
-                                                th:data-categoria="${item.categoria}"
+                                                th:data-categoria="${item.categoria != null ? item.categoria.id : ''}"
                                                 th:data-urlimagen="${item.urlImagen}"
                                                 th:data-disponibilidad="${item.disponibilidad ?: false}"
                                                 th:data-activo="${item.activo != false}"
@@ -131,11 +131,8 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="categoria" class="form-label fw-bold small text-muted">CATEGORÍA</label>
-                                <select class="form-select bg-light border-0 p-3" id="categoria" name="categoria" required>
-                                    <option value="Entrada">Entrada</option>
-                                    <option value="Fondo">Fondo</option>
-                                    <option value="Postre">Postre</option>
-                                    <option value="Bebida">Bebida</option>
+                                <select class="form-select bg-light border-0 p-3" id="categoria" name="categoria.id" required>
+                                    <option th:each="c : ${categoriasDisponibles}" th:value="${c.id}" th:text="${c.nombre}"></option>
                                 </select>
                             </div>
                         </div>
@@ -198,7 +195,7 @@
             document.getElementById('nombre').value = '';
             document.getElementById('descripcion').value = '';
             document.getElementById('precio').value = '';
-            document.getElementById('categoria').value = 'Entrada';
+            document.getElementById('categoria').selectedIndex = 0;
             document.getElementById('urlImagen').value = '';
             document.getElementById('disponibilidad').checked = true;
         }

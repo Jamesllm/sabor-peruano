@@ -27,6 +27,10 @@
                 <i class="bi bi-calendar-check"></i>
                 <span>Reservas</span>
             </a>
+            <a th:href="@{/admin/mesas}" class="sidebar-link" th:classappend="${activePage == 'mesas' ? 'active' : ''}">
+                <i class="bi bi-grid-3x3-gap"></i>
+                <span>Mesas</span>
+            </a>
             <a th:href="@{/admin/equipo}" class="sidebar-link" th:classappend="${activePage == 'equipo' ? 'active' : ''}">
                 <i class="bi bi-people"></i>
                 <span>Equipo</span>
@@ -34,6 +38,14 @@
             <a th:href="@{/admin/menu}" class="sidebar-link" th:classappend="${activePage == 'menu' ? 'active' : ''}">
                 <i class="bi bi-journal-richtext"></i>
                 <span>Menú</span>
+            </a>
+            <a th:href="@{/admin/clientes}" class="sidebar-link" th:classappend="${activePage == 'clientes' ? 'active' : ''}">
+                <i class="bi bi-person-badge"></i>
+                <span>Clientes</span>
+            </a>
+            <a th:href="@{/admin/catalogos}" class="sidebar-link" th:classappend="${activePage == 'catalogos' ? 'active' : ''}">
+                <i class="bi bi-tags"></i>
+                <span>Catálogos</span>
             </a>
             <hr class="my-4 opacity-10">
             <a th:href="@{/}" class="sidebar-link">

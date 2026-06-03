@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{admin/fragments :: head('Equipo')}"></head>
+<head th:replace="~{admin/fragments :: head('Clientes')}"></head>
 <body class="bg-light">
     <div class="dashboard-wrapper">
-        <aside th:replace="~{admin/fragments :: sidebar('equipo')}"></aside>
+        <aside th:replace="~{admin/fragments :: sidebar('clientes')}"></aside>
         <main class="main-content">
-            <header th:replace="~{admin/fragments :: header('Personal')}"></header>
+            <header th:replace="~{admin/fragments :: header('Clientes')}"></header>
             <div class="container-fluid p-4 p-lg-5">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-                    <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#empleadoModal" onclick="openCreateModal()">
-                        <i class="bi bi-person-plus me-2"></i>Añadir Miembro
+                    <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#clienteModal" onclick="openCreateModal()">
+                        <i class="bi bi-person-plus me-2"></i>Registrar Cliente
                     </button>
 
                     <!-- Buscador y Filtros -->
@@ -17,7 +17,7 @@
                         <!-- Buscador -->
                         <div class="input-group bg-white shadow-sm rounded-3" style="width: 300px;">
                             <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
-                            <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2" placeholder="Buscar miembro..." onkeyup="filterCards()">
+                            <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2" placeholder="Buscar cliente..." onkeyup="filterCards()">
                         </div>
                         <!-- Filtros de Estado -->
                         <div class="btn-group shadow-sm rounded-3" role="group">
@@ -33,69 +33,70 @@
                     </div>
                 </div>
 
-                <!-- Contenedor de Tabla de Personal -->
+                <!-- Contenedor de Tabla de Clientes -->
                 <div class="table-container shadow-sm rounded-3 bg-white p-0 overflow-hidden">
                     <div class="table-responsive">
                         <table class="table align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Iniciales</th>
                                     <th>Nombre Completo</th>
-                                    <th>Cargo / Puesto</th>
+                                    <th>DNI / RUC</th>
+                                    <th>Teléfono</th>
+                                    <th>Email</th>
                                     <th>Estado</th>
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="team-table-body">
-                                <tr th:each="emp : ${equipo}" class="team-row" th:data-activo="${emp.activo != false}">
-                                    <td class="text-muted" th:text="'#' + ${emp.id}">#1</td>
+                            <tbody id="client-table-body">
+                                <tr th:each="c : ${clientes}" class="client-row" th:data-activo="${c.activo != false}">
+                                    <td class="text-muted" th:text="'#' + ${c.id}">#1</td>
+                                    <td class="fw-bold client-name-col" th:text="${c.nombre}">Juan Pérez</td>
+                                    <td class="client-doc-col" th:text="${c.documento}">72819382</td>
+                                    <td th:text="${c.telefono}">+51 987654321</td>
+                                    <td th:text="${c.email}">juan.perez@email.com</td>
                                     <td>
-                                        <div class="rounded-circle p-1 text-white fw-bold d-flex align-items-center justify-content-center bg-red"
-                                             style="width: 40px; height: 40px; font-size: 0.9rem;" th:text="${emp.iniciales}">EL</div>
-                                    </td>
-                                    <td class="fw-bold member-name" th:text="${emp.nombre}">Elena Lopez</td>
-                                    <td th:text="${emp.cargo}">Capitán de Meseros</td>
-                                    <td>
-                                        <span th:if="${emp.activo != false}" class="badge bg-success-subtle text-success">Activo</span>
-                                        <span th:if="${emp.activo == false}" class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                        <span th:if="${c.activo != false}" class="badge bg-success-subtle text-success">Activo</span>
+                                        <span th:if="${c.activo == false}" class="badge bg-secondary-subtle text-secondary">Inactivo</span>
                                     </td>
                                     <td class="text-end">
                                         <button class="btn btn-sm btn-light rounded-circle p-2 mx-1"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#empleadoModal"
-                                                th:data-id="${emp.id}"
-                                                th:data-nombre="${emp.nombre}"
-                                                th:data-cargo="${emp.cargo}"
-                                                th:data-activo="${emp.activo != false}"
+                                                data-bs-target="#clienteModal"
+                                                th:data-id="${c.id}"
+                                                th:data-nombre="${c.nombre}"
+                                                th:data-documento="${c.documento}"
+                                                th:data-telefono="${c.telefono}"
+                                                th:data-email="${c.email}"
+                                                th:data-activo="${c.activo != false}"
                                                 onclick="openEditModal(this)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         
                                         <!-- Logical delete button (only when active) -->
-                                        <button th:if="${emp.activo != false}"
+                                        <button th:if="${c.activo != false}"
                                                 class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-danger"
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#deleteConfirmModal"
-                                                th:data-delete-url="@{'/admin/equipo/eliminar/' + ${emp.id}}"
+                                                th:data-delete-url="@{'/admin/clientes/eliminar/' + ${c.id}}"
                                                 onclick="prepareDelete(this)">
                                             <i class="bi bi-trash"></i>
                                         </button>
 
                                         <!-- Activation button (only when inactive) -->
-                                        <a th:if="${emp.activo == false}"
-                                           th:href="@{'/admin/equipo/activar/' + ${emp.id}}"
+                                        <a th:if="${c.activo == false}"
+                                           th:href="@{'/admin/clientes/activar/' + ${c.id}}"
                                            class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-success"
-                                           title="Activar Miembro">
+                                           title="Activar Cliente">
                                             <i class="bi bi-check-circle"></i>
                                         </a>
                                     </td>
                                 </tr>
-                                <!-- Mensaje si no hay miembros -->
-                                <tr th:if="${#lists.isEmpty(equipo)}">
-                                    <td colspan="6" class="text-center py-5">
+                                <!-- Mensaje si no hay clientes -->
+                                <tr th:if="${#lists.isEmpty(clientes)}">
+                                    <td colspan="7" class="text-center py-5">
                                         <i class="bi bi-people display-1 text-muted mb-4"></i>
-                                        <h3 class="text-muted">No se encontraron miembros registrados.</h3>
+                                        <h3 class="text-muted">No se encontraron clientes registrados.</h3>
                                     </td>
                                 </tr>
                             </tbody>
@@ -106,29 +107,37 @@
         </main>
     </div>
 
-    <!-- Modal Empleado -->
-    <div class="modal fade" id="empleadoModal" tabindex="-1" aria-labelledby="empleadoModalLabel" aria-hidden="true">
+    <!-- Modal Cliente -->
+    <div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header border-0 bg-light p-4 rounded-top-4">
-                    <h5 class="modal-title fw-bold" id="modalTitle">Nuevo Miembro</h5>
+                    <h5 class="modal-title fw-bold" id="modalTitle">Registrar Cliente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/admin/equipo/guardar}" method="post">
+                <form th:action="@{/admin/clientes/guardar}" method="post">
                     <div class="modal-body p-4">
-                        <input type="hidden" id="empleadoId" name="id">
-                        <input type="hidden" id="empleadoActivo" name="activo">
+                        <input type="hidden" id="clienteId" name="id">
+                        <input type="hidden" id="clienteActivo" name="activo">
                         
                         <div class="mb-3">
                             <label for="nombre" class="form-label fw-bold small text-muted">NOMBRE COMPLETO</label>
-                            <input type="text" class="form-control bg-light border-0 p-3" id="nombre" name="nombre" required placeholder="Ej. Elena Lopez">
+                            <input type="text" class="form-control bg-light border-0 p-3" id="nombre" name="nombre" required placeholder="Ej. Juan Pérez">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="cargo" class="form-label fw-bold small text-muted">CARGO / PUESTO</label>
-                            <select class="form-select bg-light border-0 p-3" id="cargo" name="cargo" required>
-                                <option th:each="c : ${cargosDisponibles}" th:value="${c.nombre}" th:text="${c.nombre}"></option>
-                            </select>
+                            <label for="documento" class="form-label fw-bold small text-muted">DNI / RUC</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="documento" name="documento" required placeholder="Ej. 72819382 o 20601234567">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label fw-bold small text-muted">TELÉFONO</label>
+                            <input type="text" class="form-control bg-light border-0 p-3" id="telefono" name="telefono" placeholder="Ej. +51 987654321">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold small text-muted">EMAIL</label>
+                            <input type="email" class="form-control bg-light border-0 p-3" id="email" name="email" placeholder="Ej. cliente@correo.com">
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 bg-light rounded-bottom-4">
@@ -146,8 +155,8 @@
             <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
                 <div class="modal-body">
                     <i class="bi bi-exclamation-triangle-fill display-3 text-warning mb-4"></i>
-                    <h4 class="fw-bold mb-3">¿Desactivar miembro?</h4>
-                    <p class="text-muted small">Esta acción marcará al miembro del equipo como inactivo. No se listará como personal activo.</p>
+                    <h4 class="fw-bold mb-3">¿Desactivar cliente?</h4>
+                    <p class="text-muted small">Esta acción marcará al cliente como inactivo. No se listará como cliente elegible.</p>
                     <div class="d-flex gap-2 justify-content-center mt-4">
                         <button type="button" class="btn btn-outline-dark px-4" data-bs-dismiss="modal">Cancelar</button>
                         <a id="confirmDeleteBtn" href="#" class="btn btn-red px-4 text-white shadow-sm">Confirmar</a>
@@ -161,19 +170,23 @@
 
     <script>
         function openEditModal(button) {
-            document.getElementById('modalTitle').textContent = 'Editar Miembro';
-            document.getElementById('empleadoId').value = button.getAttribute('data-id');
-            document.getElementById('empleadoActivo').value = button.getAttribute('data-activo');
+            document.getElementById('modalTitle').textContent = 'Editar Cliente';
+            document.getElementById('clienteId').value = button.getAttribute('data-id');
+            document.getElementById('clienteActivo').value = button.getAttribute('data-activo');
             document.getElementById('nombre').value = button.getAttribute('data-nombre');
-            document.getElementById('cargo').value = button.getAttribute('data-cargo');
+            document.getElementById('documento').value = button.getAttribute('data-documento');
+            document.getElementById('telefono').value = button.getAttribute('data-telefono');
+            document.getElementById('email').value = button.getAttribute('data-email');
         }
 
         function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Nuevo Miembro';
-            document.getElementById('empleadoId').value = '';
-            document.getElementById('empleadoActivo').value = 'true';
+            document.getElementById('modalTitle').textContent = 'Registrar Cliente';
+            document.getElementById('clienteId').value = '';
+            document.getElementById('clienteActivo').value = 'true';
             document.getElementById('nombre').value = '';
-            document.getElementById('cargo').selectedIndex = 0;
+            document.getElementById('documento').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('email').value = '';
         }
 
         function prepareDelete(button) {
@@ -190,14 +203,15 @@
 
         function filterCards() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#team-table-body tr.team-row');
+            const rows = document.querySelectorAll('#client-table-body tr.client-row');
 
             rows.forEach(row => {
-                const name = row.querySelector('.member-name').textContent.toLowerCase();
+                const name = row.querySelector('.client-name-col').textContent.toLowerCase();
+                const doc = row.querySelector('.client-doc-col').textContent.toLowerCase();
                 const isActive = row.getAttribute('data-activo') === 'true';
 
                 // Check search query
-                const matchesSearch = name.includes(searchQuery);
+                const matchesSearch = name.includes(searchQuery) || doc.includes(searchQuery);
 
                 // Check status filter
                 let matchesStatus = false;

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments :: head('Mesas')}"></head>
+
+<body class="bg-light">
+  <div class="dashboard-wrapper">
+    <aside th:replace="~{admin/fragments :: sidebar('mesas')}"></aside>
+    <main class="main-content">
+      <header th:replace="~{admin/fragments :: header('Mesas')}"></header>
+      <div class="container-fluid p-4 p-lg-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+          <button class="btn btn-red btn-sm px-4" data-bs-toggle="modal" data-bs-target="#mesaModal"
+            onclick="openCreateModal()">
+            <i class="bi bi-plus-lg me-2"></i>Nueva Mesa
+          </button>
+
+          <!-- Buscador y Filtros -->
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <!-- Buscador -->
+            <div class="input-group bg-white shadow-sm rounded-3" style="width: 300px">
+              <span class="input-group-text border-0 bg-transparent text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-2"
+                placeholder="Buscar mesa..." onkeyup="filterCards()" />
+            </div>
+            <!-- Filtros de Estado -->
+            <div class="btn-group shadow-sm rounded-3" role="group">
+              <input type="radio" class="btn-check" name="statusFilter" id="filterAll" checked
+                onclick="setStatusFilter('all')" />
+              <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterAll">Todas</label>
+
+              <input type="radio" class="btn-check" name="statusFilter" id="filterActive"
+                onclick="setStatusFilter('active')" />
+              <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterActive">Activas</label>
+
+              <input type="radio" class="btn-check" name="statusFilter" id="filterInactive"
+                onclick="setStatusFilter('inactive')" />
+              <label class="btn btn-outline-dark px-3 py-2 border-0" for="filterInactive">Inactivas</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenedor de Tabla de Mesas -->
+        <div class="table-container shadow-sm rounded-3 bg-white p-0 overflow-hidden">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Mesa / Nombre</th>
+                  <th>Ubicación</th>
+                  <th>Capacidad</th>
+                  <th>Estado</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="mesas-table-body">
+                <tr th:each="m : ${mesas}" class="mesa-row" th:data-activo="${m.activo != false}">
+                  <td class="text-muted" th:text="'#' + ${m.id}">#1</td>
+                  <td class="fw-bold mesa-numero" th:text="${m.numero}">
+                    Mesa 01
+                  </td>
+                  <td th:text="${m.ubicacion}">Salón Principal</td>
+                  <td>
+                    <span class="badge bg-light text-dark rounded-pill px-3" th:text="${m.capacidad} + ' pers.'">4
+                      pers.</span>
+                  </td>
+                  <td>
+                    <span class="badge-status"
+                      th:classappend="${m.estado == 'Disponible' ? 'bg-success-subtle text-success' : (m.estado == 'Ocupada' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning')}"
+                      th:text="${m.estado}">Disponible</span>
+                    <span th:if="${m.activo == false}"
+                      class="badge bg-secondary-subtle text-secondary ms-1">Inactiva</span>
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-light rounded-circle p-2 mx-1" data-bs-toggle="modal"
+                      data-bs-target="#mesaModal" th:data-id="${m.id}" th:data-numero="${m.numero}"
+                      th:data-capacidad="${m.capacidad}" th:data-ubicacion="${m.ubicacion}" th:data-estado="${m.estado}"
+                      th:data-activo="${m.activo != false}" onclick="openEditModal(this)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <!-- Logical delete button (only when active) -->
+                    <button th:if="${m.activo != false}"
+                      class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-danger" data-bs-toggle="modal"
+                      data-bs-target="#deleteConfirmModal" th:data-delete-url="@{'/admin/mesas/eliminar/' + ${m.id}}"
+                      onclick="prepareDelete(this)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+
+                    <!-- Activation button (only when inactive) -->
+                    <a th:if="${m.activo == false}" th:href="@{'/admin/mesas/activar/' + ${m.id}}"
+                      class="btn btn-sm btn-light rounded-circle p-2 mx-1 text-success" title="Activar Mesa">
+                      <i class="bi bi-check-circle"></i>
+                    </a>
+                  </td>
+                </tr>
+                <!-- Mensaje si no hay mesas -->
+                <tr th:if="${#lists.isEmpty(mesas)}">
+                  <td colspan="6" class="text-center py-5">
+                    <i class="bi bi-grid display-1 text-muted mb-4"></i>
+                    <h3 class="text-muted">
+                      No se encontraron mesas registradas.
+                    </h3>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Mesa -->
+  <div class="modal fade" id="mesaModal" tabindex="-1" aria-labelledby="mesaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header border-0 bg-light p-4 rounded-top-4">
+          <h5 class="modal-title fw-bold" id="modalTitle">Nueva Mesa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form th:action="@{/admin/mesas/guardar}" method="post">
+          <div class="modal-body p-4">
+            <input type="hidden" id="mesaId" name="id" />
+            <input type="hidden" id="mesaActivo" name="activo" />
+
+            <div class="mb-3">
+              <label for="numero" class="form-label fw-bold small text-muted">NÚMERO / NOMBRE DE MESA</label>
+              <input type="text" class="form-control bg-light border-0 p-3" id="numero" name="numero" required
+                placeholder="Ej. Mesa 01 o Barra 02" />
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="capacidad" class="form-label fw-bold small text-muted">CAPACIDAD (PAX)</label>
+                <input type="number" class="form-control bg-light border-0 p-3" id="capacidad" name="capacidad" min="1"
+                  required placeholder="Ej. 4" />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="ubicacion" class="form-label fw-bold small text-muted">UBICACIÓN / ZONA</label>
+                <select class="form-select bg-light border-0 p-3" id="ubicacion" name="ubicacion" required>
+                  <option th:each="u : ${ubicacionesDisponibles}" th:value="${u.nombre}" th:text="${u.nombre}"></option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="estado" class="form-label fw-bold small text-muted">ESTADO</label>
+              <select class="form-select bg-light border-0 p-3" id="estado" name="estado" required>
+                <option value="Disponible">Disponible</option>
+                <option value="Ocupada">Ocupada</option>
+                <option value="Reservada">Reservada</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer border-0 p-4 bg-light rounded-bottom-4">
+            <button type="button" class="btn btn-outline-dark px-4 py-2 border-2" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-red px-5 py-2 text-white shadow-sm">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Eliminación -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
+        <div class="modal-body">
+          <i class="bi bi-exclamation-triangle-fill display-3 text-warning mb-4"></i>
+          <h4 class="fw-bold mb-3">¿Desactivar mesa?</h4>
+          <p class="text-muted small">
+            Esta acción marcará la mesa como inactiva. No estará disponible
+            para asignarse a reservas.
+          </p>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button type="button" class="btn btn-outline-dark px-4" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <a id="confirmDeleteBtn" href="#" class="btn btn-red px-4 text-white shadow-sm">Confirmar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{admin/fragments :: scripts}"></div>
+
+  <script>
+    function openEditModal(button) {
+      document.getElementById("modalTitle").textContent = "Editar Mesa";
+      document.getElementById("mesaId").value =
+        button.getAttribute("data-id");
+      document.getElementById("mesaActivo").value =
+        button.getAttribute("data-activo");
+      document.getElementById("numero").value =
+        button.getAttribute("data-numero");
+      document.getElementById("capacidad").value =
+        button.getAttribute("data-capacidad");
+      document.getElementById("ubicacion").value =
+        button.getAttribute("data-ubicacion");
+      document.getElementById("estado").value =
+        button.getAttribute("data-estado");
+    }
+
+    function openCreateModal() {
+      document.getElementById("modalTitle").textContent = "Nueva Mesa";
+      document.getElementById("mesaId").value = "";
+      document.getElementById("mesaActivo").value = "true";
+      document.getElementById("numero").value = "";
+      document.getElementById("capacidad").value = "4";
+      document.getElementById("ubicacion").selectedIndex = 0;
+      document.getElementById("estado").value = "Disponible";
+    }
+
+    function prepareDelete(button) {
+      const deleteUrl = button.getAttribute("data-delete-url");
+      document
+        .getElementById("confirmDeleteBtn")
+        .setAttribute("href", deleteUrl);
+    }
+
+    let currentStatusFilter = "all";
+
+    function setStatusFilter(status) {
+      currentStatusFilter = status;
+      filterCards();
+    }
+
+    function filterCards() {
+      const searchQuery = document
+        .getElementById("searchInput")
+        .value.toLowerCase();
+      const rows = document.querySelectorAll("#mesas-table-body tr.mesa-row");
+
+      rows.forEach((row) => {
+        const num = row
+          .querySelector(".mesa-numero")
+          .textContent.toLowerCase();
+        const isActive = row.getAttribute("data-activo") === "true";
+
+        // Check search query
+        const matchesSearch = num.includes(searchQuery);
+
+        // Check status filter
+        let matchesStatus = false;
+        if (currentStatusFilter === "all") {
+          matchesStatus = true;
+        } else if (currentStatusFilter === "active") {
+          matchesStatus = isActive;
+        } else if (currentStatusFilter === "inactive") {
+          matchesStatus = !isActive;
+        }
+
+        if (matchesSearch && matchesStatus) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
