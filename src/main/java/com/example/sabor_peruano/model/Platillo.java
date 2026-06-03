@@ -2,6 +2,7 @@ package com.example.sabor_peruano.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import com.example.sabor_peruano.model.catalogos.Categoria;
 
 @Entity
 @Table(name = "platillo")
@@ -17,7 +18,9 @@ public class Platillo {
 
     private BigDecimal precio;
 
-    private String categoria;
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
     private Boolean disponibilidad;
 
@@ -29,7 +32,7 @@ public class Platillo {
     public Platillo() {
     }
 
-    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, String categoria, Boolean disponibilidad) {
+    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, Categoria categoria, Boolean disponibilidad) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -38,7 +41,7 @@ public class Platillo {
         this.disponibilidad = disponibilidad;
     }
 
-    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, String categoria, String urlImagen, Boolean disponibilidad) {
+    public Platillo(Long id, String nombre, String descripcion, BigDecimal precio, Categoria categoria, String urlImagen, Boolean disponibilidad) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -81,11 +84,11 @@ public class Platillo {
         this.precio = precio;
     }
 
-    public String getCategoria() {
+    public Categoria getCategoria() {
         return categoria;
     }
 
-    public void setCategoria(String categoria) {
+    public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
 

@@ -10,8 +10,9 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String cliente;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
     private String fechaHora;
 
@@ -30,7 +31,7 @@ public class Reserva {
 
     public Reserva() {}
 
-    public Reserva(Long id, String cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
+    public Reserva(Long id, Cliente cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
         this.id = id;
         this.cliente = cliente;
         this.fechaHora = fechaHora;
@@ -40,7 +41,7 @@ public class Reserva {
         this.estado = estado;
     }
 
-    public Reserva(String cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
+    public Reserva(Cliente cliente, String fechaHora, Integer pax, String mesa, List<String> platillos, String estado) {
         this.cliente = cliente;
         this.fechaHora = fechaHora;
         this.pax = pax;
@@ -57,11 +58,11 @@ public class Reserva {
         this.id = id;
     }
 
-    public String getCliente() {
+    public Cliente getCliente() {
         return cliente;
     }
 
-    public void setCliente(String cliente) {
+    public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
 
