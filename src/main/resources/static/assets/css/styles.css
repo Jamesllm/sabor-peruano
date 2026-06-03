@@ -300,3 +300,22 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     .sidebar-brand span, .sidebar-link span { display: none; }
     .main-content { margin-left: 80px; }
 }
+
+/* Custom Nav Pills for Admin Panel (Brand Theme) */
+.nav-pills .nav-link {
+    color: var(--text-dark) !important;
+    background: transparent;
+    transition: var(--transition-base);
+    margin-left: 0 !important;
+}
+
+.nav-pills .nav-link:hover {
+    color: var(--peru-red) !important;
+    background: rgba(217, 16, 35, 0.05);
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--peru-red) !important;
+    color: white !important;
+    box-shadow: 0 8px 20px rgba(217, 16, 35, 0.2);
+}
