@@ -96,7 +96,7 @@
                 <!-- Iteración Dinámica de Platillos con Thymeleaf -->
                 <div th:each="p : ${platillos}" 
                      class="col-lg-4 col-md-6 menu-item" 
-                     th:classappend="${p.categoria}">
+                     th:classappend="${p.categoria != null ? p.categoria.nombre : ''}">
                     <div class="dish-card">
                         <div class="dish-img-container shadow">
                             <!-- th:if para disponibilidad -->

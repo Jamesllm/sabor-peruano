@@ -8,33 +8,172 @@
             <header th:replace="~{empleado/fragments :: header('Disponibilidad de Salón')}"></header>
             
             <div class="container-fluid p-4 p-lg-5">
-                <div class="row g-4 mb-5">
+                <div class="row g-4">
                     <!-- Leyenda -->
                     <div class="col-12">
-                        <div class="d-flex gap-4 mb-2">
+                        <div class="d-flex gap-4 mb-2 bg-white p-3 rounded-3 shadow-sm align-items-center">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-success rounded-circle" style="width: 12px; height: 12px;"></div>
-                                <span class="small fw-bold">Disponible</span>
+                                <span class="small fw-bold text-muted">Disponible</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="bg-danger rounded-circle" style="width: 12px; height: 12px;"></div>
-                                <span class="small fw-bold">Ocupada</span>
+                                <span class="small fw-bold text-muted">Ocupada</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-warning rounded-circle" style="width: 12px; height: 12px;"></div>
+                                <span class="small fw-bold text-muted">Reservada</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Grid de Mesas -->
-                    <div class="col-6 col-md-4 col-xl-2" th:each="i : ${#numbers.sequence(1, 12)}">
-                        <div class="card-custom text-center p-4 shadow-sm table-item" 
-                             th:classappend="${i % 3 == 0 ? 'occupied' : 'available'}">
-                            <i class="bi bi-door-closed fs-1 mb-2"></i>
-                            <h6 class="fw-bold mb-0" th:text="'Mesa ' + ${i < 10 ? '0' + i : i}">Mesa 01</h6>
-                            <small class="text-muted" th:text="${i % 3 == 0 ? 'Ocupada' : '4 personas'}">4 personas</small>
+                    <!-- Grid de Mesas Real -->
+                    <div class="col-6 col-sm-4 col-md-3 mb-3" th:each="m : ${mesas}">
+                        <div class="card-custom text-center p-4 shadow-sm table-item cursor-pointer" 
+                             th:classappend="${m.estado == 'Ocupada' ? 'occupied bg-danger-subtle border border-danger' : (m.estado == 'Reservada' ? 'reserved bg-warning-subtle border border-warning' : 'available bg-success-subtle border border-success')}"
+                             data-bs-toggle="modal" 
+                             th:data-bs-target="'#mesaModal-' + ${m.id}">
+                            <i class="bi bi-door-closed fs-1 mb-2" 
+                               th:classappend="${m.estado == 'Disponible' ? 'text-success' : (m.estado == 'Ocupada' ? 'text-danger' : 'text-warning')}"></i>
+                            <h6 class="fw-bold mb-0 text-dark" th:text="${m.numero}">Mesa 01</h6>
+                            <small class="text-muted d-block" th:text="${m.capacidad} + ' Pax (' + ${m.ubicacion} + ')'"></small>
+                            <small class="fw-bold text-uppercase mt-2 d-inline-block px-2 py-0.5 rounded-pill text-xs" 
+                                   th:classappend="${m.estado == 'Disponible' ? 'bg-success text-white' : (m.estado == 'Ocupada' ? 'bg-danger text-white' : 'bg-warning text-dark')}"
+                                   th:text="${m.estado}">Disponible</small>
                         </div>
+                    </div>
+
+                    <!-- Mensaje si no hay mesas -->
+                    <div th:if="${#lists.isEmpty(mesas)}" class="col-12 text-center py-5">
+                        <i class="bi bi-grid-3x3-gap display-1 text-muted"></i>
+                        <h3 class="text-muted mt-3">No hay mesas activas registradas.</h3>
                     </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modales de Mesa Interactivos -->
+    <div th:each="m : ${mesas}" class="modal fade" th:id="'mesaModal-' + ${m.id}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content rounded-4 border-0 shadow-xl">
+                <div class="modal-header border-0 bg-light p-4 rounded-top-4">
+                    <h5 class="modal-title fw-bold text-dark" th:text="${m.numero} + ' - ' + ${m.ubicacion}">Mesa 01</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- 1. Si la mesa está disponible -->
+                <div th:if="${m.estado == 'Disponible'}" class="modal-body p-4 text-center">
+                    <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+                    <h4 class="fw-bold text-dark">Mesa Disponible</h4>
+                    <p class="text-muted">¿Desea cambiar el estado de la mesa a ocupada e iniciar el servicio para los comensales?</p>
+                    <form th:action="@{'/empleado/mesas/ocupar/' + ${m.id}}" method="post">
+                        <button type="submit" class="btn btn-red w-100 py-3 mt-3 shadow fw-bold">OCUPAR MESA & INICIAR PEDIDO</button>
+                    </form>
+                </div>
+
+                <!-- 2. Si la mesa está reservada -->
+                <div th:if="${m.estado == 'Reservada'}" class="modal-body p-4 text-center">
+                    <i class="bi bi-calendar-event-fill text-warning display-1 mb-3"></i>
+                    <h4 class="fw-bold text-dark">Mesa Reservada</h4>
+                    <p class="text-muted">Esta mesa tiene una reserva asignada. Si los clientes han llegado, puede iniciar el servicio.</p>
+                    <form th:action="@{'/empleado/mesas/ocupar/' + ${m.id}}" method="post">
+                        <button type="submit" class="btn btn-red w-100 py-3 mt-3 shadow fw-bold">OCUPAR MESA (CLIENTES LLEGARON)</button>
+                    </form>
+                </div>
+
+                <!-- 3. Si la mesa está ocupada -->
+                <div th:if="${m.estado == 'Ocupada'}" class="modal-body p-4">
+                    <div class="row g-4">
+                        <!-- Columna Izquierda: Información de Consumo y Cierre de Cuenta -->
+                        <div class="col-md-6 border-end">
+                            <div class="text-center mb-4 bg-light p-3 rounded-4">
+                                <i class="bi bi-clock-history text-danger fs-2 mb-2 d-block"></i>
+                                <h5 class="fw-bold text-dark mb-1">Mesa en Servicio</h5>
+                                <span class="badge bg-danger rounded-pill px-3 py-1.5 small">Servicio Activo</span>
+                            </div>
+
+                            <!-- Listado de platos pedidos activos -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-receipt text-red"></i>
+                                    <span>Consumo Registrado</span>
+                                </h6>
+                                <div class="overflow-auto pe-2" style="max-height: 200px;">
+                                    <ul class="list-group list-group-flush">
+                                        <li th:each="platillo : ${pedidosActivos.get(m.id)?.platillos}" 
+                                            class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0 py-2 border-bottom border-light">
+                                            <span class="small fw-semibold"><i class="bi bi-check2 text-danger me-2"></i> <span th:text="${platillo}">Plato</span></span>
+                                            <span class="badge bg-light text-dark rounded-pill">1</span>
+                                        </li>
+                                        <li th:if="${pedidosActivos.get(m.id) == null or #lists.isEmpty(pedidosActivos.get(m.id).platillos)}" class="list-group-item bg-transparent px-0 py-4 text-muted text-center border-0 small">
+                                            <i class="bi bi-info-circle me-1"></i> No se han registrado platos en este pedido.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Formulario para liberar mesa (Pago) -->
+                            <hr class="opacity-10 my-4">
+                            <form th:action="@{'/empleado/mesas/liberar/' + ${m.id}}" method="post">
+                                <button type="submit" class="btn btn-red w-100 py-3 shadow fw-bold">
+                                    <i class="bi bi-cash-coin me-2"></i>PAGAR CUENTA & LIBERAR
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Columna Derecha: Agregar / Modificar Pedido -->
+                        <div class="col-md-6" th:with="catNames=${#sets.toSet(platillos.?[categoria != null].![categoria.nombre])}">
+                            <form th:action="@{/empleado/mesas/pedido/guardar}" method="post" class="h-100 d-flex flex-column justify-content-between">
+                                <input type="hidden" name="mesaId" th:value="${m.id}">
+                                <div>
+                                    <h6 class="fw-bold text-muted small text-uppercase mb-3 d-flex align-items-center gap-2">
+                                        <i class="bi bi-plus-circle text-red"></i>
+                                        <span>Agregar / Modificar Pedido</span>
+                                    </h6>
+                                    
+                                    <!-- Buscador y Filtro de Categoría -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-7">
+                                            <div class="input-group shadow-sm rounded-3">
+                                                <span class="input-group-text border-0 bg-white text-muted"><i class="bi bi-search"></i></span>
+                                                <input type="text" class="form-control border-0 py-2 bg-white" placeholder="Buscar..." th:onkeyup="|filterDishesCombined(this, null, 'dish-list-container-' + ${m.id})|">
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <select class="form-select border-0 shadow-sm py-2 bg-white rounded-3 small fw-bold text-muted" th:onchange="|filterDishesCombined(null, this, 'dish-list-container-' + ${m.id})|">
+                                                <option value="ALL">Categorías...</option>
+                                                <option th:each="catName : ${catNames}" th:value="${catName}" th:text="${catName}"></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Contenedor con scroll para checkboxes agrupados por categoría -->
+                                    <div th:id="'dish-list-container-' + ${m.id}" class="border rounded-3 p-3 bg-white overflow-auto text-start mb-3" style="max-height: 220px;">
+                                        <div th:each="catName : ${catNames}" class="mb-3 category-group-block" th:data-category-name="${catName}">
+                                            <h6 class="fw-bold text-red border-bottom pb-1 mb-2 category-header" th:text="${catName}">Categoría</h6>
+                                            <div th:each="plat : ${platillos}" th:if="${plat.categoria != null and plat.categoria.nombre == catName}" class="form-check mb-2 dish-item-check">
+                                                <input class="form-check-input" type="checkbox" name="platillos" th:value="${plat.nombre}" th:id="'check-' + ${m.id} + '-' + ${plat.id}"
+                                                       th:checked="${pedidosActivos.get(m.id) != null and pedidosActivos.get(m.id).platillos != null and pedidosActivos.get(m.id).platillos.contains(plat.nombre)}">
+                                                <label class="form-check-label fw-semibold text-dark" th:for="'check-' + ${m.id} + '-' + ${plat.id}">
+                                                    <span th:text="${plat.nombre}">Lomo Saltado</span>
+                                                    <span class="text-red ms-1 small fw-bold" th:text="'(S/ ' + ${plat.precio} + ')'">(S/ 55.00)</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-outline-dark w-100 py-3 fw-bold shadow-sm">
+                                        <i class="bi bi-save me-2"></i>GUARDAR PEDIDO
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- El fragmento de scripts y modales debe estar presente para la funcionalidad de "Nueva Reserva" en el header -->
@@ -59,5 +198,54 @@
     </div>
     
     <div th:replace="~{empleado/fragments :: scripts}"></div>
+    <script>
+        function filterDishesCombined(inputEl, selectEl, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            // Get text query
+            let textInput = inputEl;
+            if (!textInput) {
+                textInput = container.closest('.modal-body').querySelector('input[type="text"]');
+            }
+            const query = textInput ? textInput.value.toLowerCase() : '';
+            
+            // Get selected category
+            let categorySelect = selectEl;
+            if (!categorySelect) {
+                categorySelect = container.closest('.modal-body').querySelector('select');
+            }
+            const selectedCat = categorySelect ? categorySelect.value : 'ALL';
+            
+            // Filter categories blocks
+            const blocks = container.querySelectorAll('.category-group-block');
+            blocks.forEach(block => {
+                const blockCat = block.getAttribute('data-category-name');
+                const items = block.querySelectorAll('.dish-item-check');
+                
+                let visibleItemsInBlock = 0;
+                
+                items.forEach(item => {
+                    const label = item.querySelector('label').textContent.toLowerCase();
+                    const matchesText = label.includes(query);
+                    const matchesCategory = (selectedCat === 'ALL' || blockCat === selectedCat);
+                    
+                    if (matchesText && matchesCategory) {
+                        item.style.display = 'block';
+                        visibleItemsInBlock++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Hide or show the whole block (header + group) depending on matches
+                if (visibleItemsInBlock > 0) {
+                    block.style.display = 'block';
+                } else {
+                    block.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

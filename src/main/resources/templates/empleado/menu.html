@@ -36,7 +36,7 @@
                             <tbody id="menu-table-body">
                                 <tr th:each="item : ${menu}">
                                     <td class="fw-bold text-dark dish-name" th:text="${item.nombre}">Lomo Saltado</td>
-                                    <td th:text="${item.categoria}">Fondos</td>
+                                    <td th:text="${item.categoria != null ? item.categoria.nombre : ''}">Fondos</td>
                                     <td class="fw-bold text-red" th:text="'S/ ' + ${item.precio}">S/ 55.00</td>
                                     <td>
                                         <span th:if="${item.disponibilidad == true}" class="badge bg-success-subtle text-success">Disponible</span>
